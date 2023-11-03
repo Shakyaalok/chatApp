@@ -1,0 +1,107 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.section-top {
+    display: flex;
+    align-items: center;
+    height: 7vh;
+}
+
+.top-left {
+    display: block;
+    border-right: 2px solid white;
+    color: red;
+    position: relative;
+    top: 0;
+}
+
+.top-left-down {
+    top: 2.3rem;
+    min-height: 90vh;
+}
+
+.pos-absolute-message-box {
+    position: relative;
+}
+
+.entermsg-bottom {
+    color: red;
+    position: absolute;
+    bottom: 1px;
+    width: 100%;
+}
+
+
+/* chat background */
+
+.chat-background {
+    background: url('https://images.unsplash.com/photo-1656231925500-3c7330f52599?auto=format&fit=crop&q=80&w=1524&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    min-height: 97vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+
+/*-> form */
+
+.form-outer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+form>div>input {
+    padding: .2rem 2rem;
+    border-radius: .4rem;
+    width: 100%;
+    font-weight: 500;
+}
+
+form>div>input:focus {
+    outline: none;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(25, 135, 84);
+    border-radius: 0.4rem;
+    background: transparent;
+    padding: 2rem 1rem;
+    gap: 1rem;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 1);
+}
+
+form>div>label {
+    font-size: 1rem;
+}
+
+
+/* btn-singup-submit */
+
+.btn-singup-submit {
+    align-self: flex-end;
+    background-color: rgb(25, 135, 84);
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: .5s ease;
+}
+
+.btn-singup-submit:hover {
+    background: none;
+    color: rgb(25, 135, 84);
+}
+
+form>div {
+    display: flex;
+    flex-direction: column;
+}
