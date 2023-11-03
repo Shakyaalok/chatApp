@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const user = require('../models/user')
+const userModels = require('../models/user')
 
 
 const auth = (req, res, next) => {
@@ -10,11 +10,10 @@ const auth = (req, res, next) => {
             return res.status(401).json({ message: 'JWT token is missing' });
         }
         const user = jwt.verify(token, process.env.TOKEN_SECRET);
+
         // console.log('userId-->', user.userId) // we are getting this is userId not id because we are passing the userId as id during login
-        userModels.findByPk(user.userId).then(user => {
-
+        userModels.findByPk(user.userId).then(user => { // finding in usermodel
             req.user = user; // we do this to make our user globally aviable in req
-
             next();
         })
 

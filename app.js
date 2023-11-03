@@ -15,11 +15,13 @@ const sequelize = require('./utils/db')
 
 // routes
 const userRoutes = require('./routes/user')
+const chatMessageRoutes = require('./routes/chatMessage')
 
 
 
 // models
-const user = require('./models/user')
+const user = require('./models/user');
+const chatmessage = require('./models/chatMessage')
 
 
 
@@ -33,9 +35,12 @@ app.use(cors({
 app.use(express.static(path.join(__dirname, 'public/Html')))
 app.use(express.json())
 app.use('/user', userRoutes)
+app.use('/chat', chatMessageRoutes)
 
 
-
+// associations
+user.hasMany(chatmessage);
+chatmessage.belongsTo(user);
 
 
 sequelize
