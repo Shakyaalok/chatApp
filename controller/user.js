@@ -1,4 +1,5 @@
-const User = require('../models/user')
+const User = require('../models/user');
+const { use } = require('../routes/user');
 const sequelize = require('../utils/db')
 const bcrypt = require('bcrypt')
 
@@ -51,5 +52,32 @@ const registerUser = async(req, res) => {
 }
 
 
+const loginUser = async(req, res) => {
+    const t = await sequelize.transaction();
+    try {
+        const { email, password } = req.body;
 
-module.exports = { registerUser }
+        let user = await User.findOne({ where: { email } })
+        if (!user) {
+            await t.rollback();
+            return res.status(200).json({ message: 'User not found' })
+        }
+
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+            await t.rollback();
+            return res.status(200).json({ message: 'Password does not Match' })
+        }
+
+        await t.commit();
+        res.status(201).json({ message: 'Welcome' + " " + user.firstName })
+
+    } catch (error) {
+        await t.rollback();
+        return res.status(200).json({ message: 'something went wrong', err })
+    }
+}
+
+
+
+module.exports = { registerUser, loginUser }

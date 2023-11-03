@@ -87,7 +87,8 @@ form>div>label {
 
 /* btn-singup-submit */
 
-.btn-singup-submit {
+.btn-singup-submit,
+.btn-login-submit {
     align-self: flex-end;
     background-color: rgb(25, 135, 84);
     color: white;
@@ -96,9 +97,14 @@ form>div>label {
     transition: .5s ease;
 }
 
-.btn-singup-submit:hover {
+.btn-singup-submit:hover,
+.btn-login-submit:hover {
     background: none;
     color: rgb(25, 135, 84);
+}
+
+.hover-text:hover {
+    color: rgb(20, 204, 118);
 }
 
 form>div {
