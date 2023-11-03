@@ -1,5 +1,6 @@
 const User = require('../models/user')
 const sequelize = require('../utils/db')
+const bcrypt = require('bcrypt')
 
 const registerUser = async(req, res) => {
     const t = await sequelize.transaction();
@@ -32,9 +33,15 @@ const registerUser = async(req, res) => {
         }
 
 
-        user = await User.create({ firstName, lastName, email, mobile, password }, { transaction: t })
-        await t.commit();
-        res.status(201).json({ user: user })
+        //hashing the password before goes into the database
+        const saltRounds = 10;
+        bcrypt.hash(password, saltRounds, async function(err, hash) {
+            user = await User.create({ firstName, lastName, email, mobile, password: hash }, { transaction: t })
+            await t.commit();
+            res.status(201).json({ user: user })
+        })
+
+
     } catch (error) {
         await t.rollback();
         return res.status(500).json({ message: 'something went wrong', err })
