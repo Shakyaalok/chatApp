@@ -9,11 +9,11 @@ const registerUser = async(req, res) => {
 
         if (!firstName || !lastName || !email || !mobile || !password) {
             await t.rollback();
-            return res.status(500).json({ message: "All fields are required!" });
+            return res.status(200).json({ message: "All fields are required!" });
         }
         if (mobile.length > 10) {
             await t.rollback()
-            return res.status(500).json({ message: "Required a valid number" })
+            return res.status(200).json({ message: "Required a valid number" })
         }
 
 
@@ -21,7 +21,7 @@ const registerUser = async(req, res) => {
         let user = await User.findOne({ where: { email } });
         if (user) {
             await t.rollback()
-            return res.status(500).json({ message: 'User is Already exists' })
+            return res.status(200).json({ message: 'User is Already exists' })
         }
 
 
@@ -29,7 +29,7 @@ const registerUser = async(req, res) => {
         user = await User.findOne({ where: { mobile } })
         if (user) {
             await t.rollback()
-            return res.status(500).json({ message: 'User is Already exists' })
+            return res.status(200).json({ message: 'User is Already exists' })
         }
 
 
@@ -44,7 +44,7 @@ const registerUser = async(req, res) => {
 
     } catch (error) {
         await t.rollback();
-        return res.status(500).json({ message: 'something went wrong', err })
+        return res.status(200).json({ message: 'something went wrong', err })
     }
 
 

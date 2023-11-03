@@ -105,3 +105,52 @@ form>div {
     display: flex;
     flex-direction: column;
 }
+
+
+/* error message */
+
+.message {
+    position: fixed;
+    top: 50px;
+    /* Adjust the top position as needed */
+    right: -200px;
+    /* Start from the right and move into the screen */
+    background-color: #cd1616;
+    padding: 15px;
+    color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    animation: slide-in 1s forwards;
+    /* Animation duration and direction */
+}
+
+
+/* key frames for the error message showing effect */
+
+@keyframes slide-in {
+    0% {
+        right: -200px;
+        /* Starting position */
+    }
+    100% {
+        right: 20px;
+        /* Final position */
+    }
+}
+
+.hide {
+    animation: slide-out 1s forwards;
+    /* Animation duration and direction */
+}
+
+@keyframes slide-out {
+    0% {
+        right: 20px;
+        /* Starting position */
+    }
+    100% {
+        right: -200px;
+        /* Final position */
+    }
+}
