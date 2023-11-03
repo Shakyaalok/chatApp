@@ -1,7 +1,8 @@
 const User = require('../models/user');
 const { use } = require('../routes/user');
 const sequelize = require('../utils/db')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken')
 
 const registerUser = async(req, res) => {
     const t = await sequelize.transaction();
@@ -69,15 +70,19 @@ const loginUser = async(req, res) => {
             return res.status(200).json({ message: 'Password does not Match' })
         }
 
+        const token = generateToken(user.id)
         await t.commit();
-        res.status(201).json({ message: 'Welcome' + " " + user.firstName })
+        res.status(201).json({ token: token })
 
     } catch (error) {
         await t.rollback();
-        return res.status(200).json({ message: 'something went wrong', err })
+        return res.status(200).json({ message: 'something went wrong', error })
     }
 }
 
-
+// generate jsonwebtoken
+function generateToken(id) {
+    return jwt.sign({ userId: id }, process.env.TOKEN_SECRET);
+}
 
 module.exports = { registerUser, loginUser }
