@@ -27,8 +27,12 @@ const User = sequelize.define('user', {
         type: Sequelize.STRING,
         allowNull: false,
     },
+    isOnline: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: 0
+    },
 
-})
+}, { timestamps: true })
 
 
 module.exports = User

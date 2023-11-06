@@ -69,13 +69,24 @@ const loginUser = async(req, res) => {
             return res.status(200).json({ message: 'Password does not Match' })
         }
 
-        const token = generateToken(user.id)
+        let token = generateToken(user.id)
         await t.commit();
         res.status(201).json({ token: token })
 
     } catch (error) {
         await t.rollback();
         return res.status(200).json({ message: 'something went wrong', error })
+    }
+}
+
+
+
+const logout = async(req, res) => {
+    try {
+        // req.token.destroy();
+        // res.redirect('/login.html')
+    } catch (error) {
+
     }
 }
 

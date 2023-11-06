@@ -25,13 +25,57 @@
 
 .pos-absolute-message-box {
     position: relative;
+    overflow-y: scroll;
+    height: 80vh;
 }
+
+
+/* .top-right {
+    min-height: 80vh;
+    max-height: 80vh;
+    Set a minimum height for the chat messages section
+    overflow-y: auto;
+    Add a scroll bar when the content overflows
+}  */
 
 .entermsg-bottom {
     color: red;
     position: absolute;
-    bottom: 1px;
+    bottom: 0;
     width: 100%;
+}
+
+.pos-static {
+    position: fixed;
+    bottom: 5%;
+    width: 80%;
+}
+
+.pos-static>div {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.icons {
+    position: absolute;
+    left: 55%;
+    z-index: 2;
+    left: 55%;
+    background: red;
+    z-index: 10;
+}
+
+
+/* input-box-message */
+
+.input-box-message {
+    width: 100%;
+    top: -14%;
+    font-size: 1.2rem;
+    padding: 0.2rem 1rem;
+    /* min-width: 321px; */
 }
 
 
@@ -113,6 +157,32 @@ form>div {
 }
 
 
+/* message-desing-inbox */
+
+.message-desing-inbox {
+    margin-bottom: 10px;
+    background: #ffffff;
+    font-size: 1.5rem;
+    padding: 0.2rem 2rem;
+    color: black;
+    width: fit-content;
+    word-wrap: break-word;
+    max-width: 50%;
+    /* overflow-y: hidden; */
+}
+
+.users-inbox-design {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    background: #ffffff;
+    font-size: 1.2rem;
+    padding: 0.2rem 1rem;
+    color: black;
+    word-wrap: break-word;
+}
+
+
 /* error message */
 
 .message {
@@ -129,6 +199,27 @@ form>div {
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     animation: slide-in 1s forwards;
     /* Animation duration and direction */
+}
+
+
+/* fa-solid */
+
+.fa-solid {
+    content: "\f2f6";
+    font-size: 2rem;
+    color: rgb(25, 135, 84);
+}
+
+.fa-circle-dot {
+    font-size: 1rem;
+}
+
+.online {
+    color: green;
+}
+
+.offline {
+    color: red;
 }
 
 

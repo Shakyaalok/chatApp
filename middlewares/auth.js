@@ -24,5 +24,36 @@ const auth = (req, res, next) => {
 }
 
 
+const isLogin = async(req, res, next) => {
 
-module.exports = { auth };
+    try {
+
+        if (req.session.user) {
+
+        } else {
+            // alert('/login.html')
+            // res.redirect('/login.html')
+        }
+
+        next();
+    } catch (error) {
+        console.log('error from is login', error)
+    }
+}
+
+
+const isLogout = async(req, res, next) => {
+
+    try {
+
+        if (req.session.user) {
+            // res.redirect('/chat.html')
+        }
+        next();
+    } catch (error) {
+        console.log('error from is logout', error)
+    }
+}
+
+
+module.exports = { auth, isLogin, isLogout };
