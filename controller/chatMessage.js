@@ -7,17 +7,22 @@ const message = async(req, res) => {
     const t = await sequelize.transaction();
     try {
         const userId = req.user.id;
-        console.log('userId', userId)
-        let { message } = req.body
+        // console.log('userId', userId);
+        const { message, reciever_id, sender_id } = req.body
+            // let chat = {
+            //     message: message,
+            //     reciever_id: reciever_id,
+            //     sender: sender_id
+            // }
 
         if (!message) {
             await t.rollback();
             return res.status(200).json({ message: "message is required" });
         }
 
-        message = await chatMessage.create({ message, userId })
+        let newMsg = await chatMessage.create({ message, reciever_id, sender_id, userId })
         await t.commit();
-        res.status(201).json(message)
+        res.status(201).json(newMsg)
     } catch (error) {
         await t.rollback();
         return res.status(200).json({ success: false, error })

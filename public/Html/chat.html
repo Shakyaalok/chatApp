@@ -17,16 +17,13 @@
 
     <div class="container-fluid">
         <div class="row bg-success section-top">
-            <div class="col-sm-4 col-md-3 top-left">
-                <div>
-                    left
-                </div>
+            <div class="col-sm-4 col-md-3 top-left currentUserNameOnLeft text-white">
+
             </div>
-            <div class="col-sm-8 col-md-9 show-username-status">show user and status we will we set it later</div>
+            <div class="col-sm-8 col-md-9" id="show-username-status"></div>
         </div>
 
         <div class="row bg-dark top-left-down">
-
             <div class="col-sm-4 col-md-3 top-left">
                 <div>
                     <div class="users-inbox" style="margin-top: 2rem;"></div>
@@ -34,28 +31,11 @@
             </div>
 
 
+
             <div class="col-sm-8 col-md-9 top-right text-white pos-absolute-message-box">
-                <div>
-                    <div class="message-inbox " style="margin-top: 2rem;">sender</div>
-                </div>
-                <div>
-                    <div class="message-inbox " style="margin-top: 2rem;">Reciever</div>
-                </div>
-
-                <div class="row pos-static">
-
-                    <div>
-                        <div class="col-sm-1 col-md-1 icons">icons</div>
-                        <div class="col-sm-8 col-md-8">
-                            <input type="text" class="input-box-message" id="message-box" onchange="sentOnEnter()">
-                        </div>
-                        <div class="col-sm-3 col-md-3">
-                            <i class="fa-solid fa-right-to-bracket" id="message-sent-button"></i>
-                        </div>
-                    </div>
-
-                </div>
+                <div id="visibleBoxForMessage"></div>
             </div>
+
 
         </div>
     </div>
@@ -66,16 +46,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.2/socket.io.js" integrity="sha512-VJ6+sp2E5rFQk05caiXXzQd1wBABpjEj1r5kMiLmGAAgwPItw1YpqsCCBtq8Yr1x6C49/mTpRdXtq8O2RcZhlQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script>
-        const messageBtn = document.getElementById('message-sent-button').addEventListener('click', sent);
+        // meesage sent on enterbutton
+        var reciever_id;
 
-        // message sent
-        function sent() {
+        function sentOnEnter() {
             const message = document.getElementById('message-box').value;
 
             const token = localStorage.getItem('token');
+            const sender_id = parseJwt(token).userId
             console.log(token)
             axios.post(`http://localhost:5000/chat`, {
-                    message
+                    message,
+                    sender_id,
+                    reciever_id
                 }, {
                     headers: {
                         'Authorization': token
@@ -92,41 +75,43 @@
             document.getElementById('message-box').value = '';
         }
 
-        // meesage sent on enterbutton
-        function sentOnEnter() {
-            sent()
-        }
-
         //shows all the user except itself
-        window.addEventListener('DOMContentLoaded', () => {
-                const token = localStorage.getItem('token');
-                console.log(token)
-                axios.get(`http://localhost:5000/chat/allusers`, {
-                        headers: {
-                            'Authorization': token
-                        }
-                    })
-                    .then((response) => {
-                        console.log('-->', response.data.details);
-                        for (const users of response.data.details) {
-                            showUsers(users)
-                            console.log(users.isOnline)
-                        }
-                    })
-                    .catch((err) => {
-                        console.log('something went wrong', err)
-                    })
-            })
-            // show all message on DOM loaded
+        // const currntUsrNameOnLft = document.querySelector('.currentUserNameOnLeft')
         window.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
             console.log(token)
-            axios.get(`http://localhost:5000/chat/all`, {
+            axios.get(`http://localhost:5000/chat/allusers`, {
                     headers: {
                         'Authorization': token
                     }
                 })
                 .then((response) => {
+                    console.log('-->', response.data.details);
+                    for (const users of response.data.details) {
+                        showUsers(users);
+                        // currntUsrNameOnLft.innerHTML = users.name
+                        // console.log(users.isOnline);
+                    }
+                })
+                .catch((err) => {
+                    console.log('something went wrong', err)
+                })
+
+
+        })
+
+
+        // show all message on DOM loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            console.log(token)
+            axios.get(`http://localhost:5000/chat/all`, {
+                headers: {
+                    'Authorization': token
+                }
+            })
+
+            .then((response) => {
                     console.log(response);
                     for (const allmsg of response.data) {
                         addMsgInBox(allmsg.message)
@@ -135,6 +120,7 @@
                 .catch((err) => {
                     console.log('something went wrong', err)
                 })
+
         })
 
 
@@ -148,6 +134,7 @@
             }).join(''));
             return JSON.parse(jsonPayload);
         }
+
 
         function addMsgInBox(msgInbox) {
             const existingEmptyElement = document.querySelector('.message-inbox')
@@ -164,9 +151,10 @@
 
         function showUsers(users) {
             const existingEmptyElement = document.querySelector('.users-inbox');
-            // const userNameStatus = document.querySelector('.show-username-status');
             const Div = document.createElement('div');
             Div.classList.add('users-inbox-design')
+            Div.setAttribute("onclick", `switchUser('${users.id}','${users.name}', '${users.isOnline}')`) // adding attributes for the reicever for the chat and convert the object into string otherwise it will not work
+            Div.setAttribute('data-id', `${users.id}`)
             if (users.isOnline) {
                 Div.innerHTML = `                        
                         <span>${users.name}</span>
@@ -185,6 +173,61 @@
 
 
 
+        // function when any click triggers on the user name of the chat like showing the chat related to the that users
+        function switchUser(ID, name, isOnline) {
+            const existingEmptyElement = document.getElementById('visibleBoxForMessage');
+            existingEmptyElement.innerHTML = ''
+            const Div = document.createElement('div');
+            Div.innerHTML = `  <div>
+                        <div class="message-inbox sender" style="margin-top: 2rem;">sender</div>
+                    </div>
+                    <div>
+                        <div class="message-inbox reciever" style="margin-top: 2rem;">Reciever</div>
+                    </div>
+
+
+                    <div class="row pos-static">
+                        <div class="col-sm-12 col-md-12">
+                            <input type="text" class="input-box-message" id="message-box" onchange="sentOnEnter()">
+                        </div>
+                    </div>`;
+            existingEmptyElement.appendChild(Div);
+            showUserNameOnTop(ID, name, isOnline);
+            reciever_id = `${ID}`
+            console.log('this is reciever id-->', ID)
+
+        }
+
+        function showUserNameOnTop(ID, name, isOnline) {
+            console.log(isOnline);
+            const userNameAndStatus = document.getElementById('show-username-status');
+            userNameAndStatus.innerHTML = ''
+            const Div = document.createElement('div');
+            Div.classList.add('userNameAndStatus');
+            if (isOnline === 'false') {
+                Div.innerHTML = `
+           <span>${name} </span>
+           <span class='targetst_${ID}'> offline </span>
+  
+            `;
+            } else {
+                Div.innerHTML = `
+           <span>${name} </span>
+           <span class='targetst_${ID}'> online </span>
+  
+            `;
+
+            }
+
+            userNameAndStatus.appendChild(Div)
+
+        }
+
+
+
+        //sender id 
+
+        let sender_id = parseJwt(localStorage.getItem('token')).userId;
         // socket
         var socket = io('/user-namespace', {
             auth: {
@@ -194,18 +237,28 @@
 
         // update the user status immediately and its backend is broadCast--> online
         socket.on('getOnlineUser', function(data) {
-            const changeStatus = document.querySelector(`.target_${data.id}`)
-            console.log(changeStatus)
+            const changeStatus = document.querySelector(`.target_${data.id}`);
+            const changeStatusOnTop = document.querySelector(`.targetst_${data.id}`);
             changeStatus.classList.remove('offline');
-            changeStatus.classList.add('online')
+            changeStatus.classList.add('online');
+            // these two lines must be below otherwise it will not works
+            changeStatusOnTop.innerText = '';
+            changeStatusOnTop.innerText = 'online'
+
         })
 
 
         // update the user status immediately and its backend is broadCast--> offline
         socket.on('getOfflineUser', function(data) {
-            const changeStatus = document.querySelector(`.target_${data.id}`)
+            const changeStatus = document.querySelector(`.target_${data.id}`);
+            const changeStatusOnTop = document.querySelector(`.targetst_${data.id}`);
             changeStatus.classList.remove('online')
-            changeStatus.classList.add('offline')
+            changeStatus.classList.add('offline');
+            // these two lines must be below otherwise it will not works
+            changeStatusOnTop.innerText = '';
+            changeStatusOnTop.innerText = 'offline'
+
+
         })
     </script>
 </body>
