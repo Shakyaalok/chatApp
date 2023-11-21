@@ -67,6 +67,12 @@ usp.on('connection', async function(socket) {
         console.log('========================->user diconnected')
     })
 
+
+    //chatting implementation
+    socket.on('newChat', function(data) {
+        socket.broadcast.emit('loadnewChat', data)
+    })
+
 })
 
 

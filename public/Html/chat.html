@@ -48,6 +48,13 @@
     <script>
         // meesage sent on enterbutton
         var reciever_id;
+        var sender_id = parseJwt(localStorage.getItem('token')).userId;
+        // socket
+        var socket = io('/user-namespace', {
+            auth: {
+                token: parseJwt(localStorage.getItem('token')).userId
+            }
+        })
 
         function sentOnEnter() {
             const message = document.getElementById('message-box').value;
@@ -66,14 +73,31 @@
                 })
                 .then((response) => {
                     console.log(response);
-                    addMsgInBox(response.data.message)
+                    addMsgInBox(response.data.message);
+                    // to getting the new message on revicer hand we do broacCasting
+                    socket.emit('newChat', response.data)
                 })
                 .catch((err) => {
                     console.log('something went wrong', err)
                 })
 
             document.getElementById('message-box').value = '';
+
+
+
         }
+
+        socket.on('loadnewChat', function(data) {
+            if (sender_id == data.reciever_id && reciever_id == data.sender_id) {
+                const existingEmptyElement = document.querySelector('.sender')
+                const Div = document.createElement('div');
+                Div.classList.add("reciever", "p-2", "mb-3")
+                Div.innerHTML = `${data.message}`;
+                existingEmptyElement.appendChild(Div)
+                const container = document.querySelector('.pos-absolute-message-box');
+                container.scrollTop = container.scrollHeight;
+            }
+        })
 
         //shows all the user except itself
         // const currntUsrNameOnLft = document.querySelector('.currentUserNameOnLeft')
@@ -102,26 +126,26 @@
 
 
         // show all message on DOM loaded
-        window.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem('token');
-            console.log(token)
-            axios.get(`http://localhost:5000/chat/all`, {
-                headers: {
-                    'Authorization': token
-                }
-            })
+        // window.addEventListener('DOMContentLoaded', () => {
+        //     const token = localStorage.getItem('token');
+        //     console.log(token)
+        //     axios.get(`http://localhost:5000/chat/all`, {
+        //         headers: {
+        //             'Authorization': token
+        //         }
+        //     })
 
-            .then((response) => {
-                    console.log(response);
-                    for (const allmsg of response.data) {
-                        addMsgInBox(allmsg.message)
-                    }
-                })
-                .catch((err) => {
-                    console.log('something went wrong', err)
-                })
+        //     .then((response) => {
+        //             console.log(response);
+        //             for (const allmsg of response.data) {
+        //                 addMsgInBox(allmsg.message)
+        //             }
+        //         })
+        //         .catch((err) => {
+        //             console.log('something went wrong', err)
+        //         })
 
-        })
+        // })
 
 
 
@@ -137,9 +161,9 @@
 
 
         function addMsgInBox(msgInbox) {
-            const existingEmptyElement = document.querySelector('.message-inbox')
+            const existingEmptyElement = document.querySelector('.sender')
             const Div = document.createElement('div');
-            Div.classList.add('message-desing-inbox')
+            // Div.classList.add('message-desing-inbox')
             Div.innerHTML = `
              ${msgInbox}
             `
@@ -176,25 +200,18 @@
         // function when any click triggers on the user name of the chat like showing the chat related to the that users
         function switchUser(ID, name, isOnline) {
             const existingEmptyElement = document.getElementById('visibleBoxForMessage');
-            existingEmptyElement.innerHTML = ''
-            const Div = document.createElement('div');
-            Div.innerHTML = `  <div>
-                        <div class="message-inbox sender" style="margin-top: 2rem;">sender</div>
-                    </div>
-                    <div>
-                        <div class="message-inbox reciever" style="margin-top: 2rem;">Reciever</div>
-                    </div>
 
-
+            // const Div = document.createElement('div');
+            existingEmptyElement.innerHTML = `<div><div class="message-inbox sender" style="margin-top: 2rem;"></div>
+                    
                     <div class="row pos-static">
                         <div class="col-sm-12 col-md-12">
                             <input type="text" class="input-box-message" id="message-box" onchange="sentOnEnter()">
                         </div>
-                    </div>`;
-            existingEmptyElement.appendChild(Div);
+                    </div></div>`;
+            // existingEmptyElement.appendChild(Div);
             showUserNameOnTop(ID, name, isOnline);
-            reciever_id = `${ID}`
-            console.log('this is reciever id-->', ID)
+            reciever_id = parseInt(`${ID}`) // to convert it into integer
 
         }
 
@@ -225,15 +242,8 @@
 
 
 
-        //sender id 
 
-        let sender_id = parseJwt(localStorage.getItem('token')).userId;
-        // socket
-        var socket = io('/user-namespace', {
-            auth: {
-                token: parseJwt(localStorage.getItem('token')).userId
-            }
-        })
+
 
         // update the user status immediately and its backend is broadCast--> online
         socket.on('getOnlineUser', function(data) {

@@ -159,6 +159,11 @@ form>div {
     /* overflow-y: hidden; */
 }
 
+.reciever {
+    position: absolute;
+    right: 1%
+}
+
 .users-inbox-design {
     display: flex;
     justify-content: space-between;
