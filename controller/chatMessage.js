@@ -9,12 +9,6 @@ const message = async(req, res) => {
         const userId = req.user.id;
         // console.log('userId', userId);
         const { message, reciever_id, sender_id } = req.body
-            // let chat = {
-            //     message: message,
-            //     reciever_id: reciever_id,
-            //     sender: sender_id
-            // }
-
         if (!message) {
             await t.rollback();
             return res.status(200).json({ message: "message is required" });
@@ -31,10 +25,11 @@ const message = async(req, res) => {
 }
 
 const allMessage = async(req, res) => {
+    //userId 
     const userId = req.user.id;
-    let { message } = req.body
 
-    message = await chatMessage.findAll({ where: { userId } })
+    let message = await chatMessage.findAll({ where: { userId } })
+    console.log('message-------------------->', message)
     res.status(201).json(message)
 
 }
@@ -65,7 +60,32 @@ const allUsers = async(req, res) => {
     }
 }
 
+const getUsersMessage = async(req, res) => {
+    const { reciverId } = req.params;
+    try {
+
+        // to include the user we have to use Op from sequelize
+
+        console.log('usermsg', reciverId)
+            // if(!recieverId){
+            //     return res.status(500).json({message: 're '})
+            // }
+        let chatMessages = await chatMessage.findAll({
+            where: {
+                [Op.or]: [{ sender_id: reciverId }, { reciever_id: reciverId }]
+            }
+        });
+        res.status(200).send({
+            status: true,
+            message: 'Successfully fetched messages',
+            data: chatMessages
+        })
+    } catch (error) {
+        console.log("error", error)
+        return res.status(500).json(error)
+    }
+}
 
 
 
-module.exports = { message, allMessage, allUsers }
+module.exports = { message, allMessage, allUsers, getUsersMessage }
