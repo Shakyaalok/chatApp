@@ -17,16 +17,22 @@
 
     <div class="container-fluid">
         <div class="row bg-success section-top">
-            <div class="col-sm-4 col-md-3 top-left currentUserNameOnLeft text-white">
-
+            <div class="col-sm-4 col-md-3 top-left text-white" onclick="createGroup()">
+                <div>
+                    <button class="btn btn-success text-bg-primary" style="font-weight: bold;">Create Group</button>
+                </div>
             </div>
+            <div id="create-group-name"></div>
             <div class="col-sm-8 col-md-9" id="show-username-status"></div>
         </div>
 
-        <div class="row bg-dark top-left-down">
+        <div class="row bg-dark top-left-down chat-dashboard">
             <div class="col-sm-4 col-md-3 top-left">
                 <div>
                     <div class="users-inbox" style="margin-top: 2rem;"></div>
+                </div>
+                <div>
+                    <div class="users-group" style="margin-top: 2rem;"></div>
                 </div>
             </div>
 
@@ -50,7 +56,7 @@
 
             </div>
 
-
+            <div id="showMsg" class="text-danger"></div>
         </div>
 
     </div>
@@ -63,6 +69,7 @@
     <script>
         // meesage sent on enterbutton
         var reciever_id;
+        let values = []
         var sender_id = parseJwt(localStorage.getItem('token')).userId;
         // socket
         var socket = io('/user-namespace', {
@@ -132,8 +139,131 @@
         })
 
 
+        // creating create group function
+        function createGroup() {
+            // event.preventDefault();
+            const groupName = document.getElementById('create-group-name');
+            groupName.innerHTML = `
+            <div class="createGroupForm d-flex align-items-center justify-content-center">
+            <div class="container">
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <div class="form-outer">
+                                <form action="" id='formToggler'>
+                                    <div onclick='closeForm()' id="closeForm">X</div>
+                                    <h3 style="color: rgb(25, 135, 84);">Creating group</h3>
+
+                                    <div>
+                                    <label for="group-member">Group Member</label>
+                                        <input type="text" id="group-member" onchange="Searching()" placeholder='Enter name or mobile number'>
+                                    </div>
+
+                                    <div id="appedingSeachNamesToDom">
+
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="name">Group Name</label>
+                                        <input type="text" id="name">
+                                    </div>
+
+                                    <div>
+                                        <label for="group-picture">Group Picture</label>
+                                        <input type="text" id="group-picture">
+                                    </div>
+
+                                  
+
+                                    <button class="btn btn-success btn-singup-submit" id="btn btn-add-group" onclick='sumitGroupDetails(event)'>Create Now</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>`
+            const chatDashboard = document.querySelector('.input-box-message');
+            const groupDashboard = document.querySelector('.users-group');
+            const topLeft = document.querySelector('.users-inbox')
+            chatDashboard.classList.add('d-none');
+            topLeft.classList.add('d-none');
+        }
 
 
+        function closeForm() {
+            let formContainer = document.querySelector('.createGroupForm');
+            const chatDashboard = document.querySelector('.input-box-message');
+            const topLeft = document.querySelector('.users-inbox')
+            formContainer.classList.add('d-none');
+            chatDashboard.classList.remove('d-block');
+            topLeft.classList.remove('d-block');
+            window.location.href = '/chat.html'
+
+
+        }
+
+
+        function Searching() {
+            const groupMember = document.getElementById('group-member').value;
+            const token = localStorage.getItem('token');
+            axios.get(`http://localhost:5000/chat/search/${groupMember}`, {
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then((response) => {
+                    // console.log('id------>', response);
+                    if (response.status == '201') {
+                        console.log(response.data)
+                        appendingSearchItem(response.data)
+
+                    }
+                    if (response.status == '200') {
+                        showMsg(response.data.message)
+                    }
+
+                })
+                .catch(err => {
+                    console.log('something went wrong', err)
+                })
+        }
+
+        function appendingSearchItem(names) {
+            const searchAndInsert = document.getElementById('appedingSeachNamesToDom');
+            searchAndInsert.style.background = 'black'
+            searchAndInsert.innerHTML = ''
+
+            for (const nms of names) {
+                const DIV = document.createElement('div')
+                console.log(DIV)
+                DIV.setAttribute('id', `target_${nms.firstName}`)
+                DIV.style.display = 'flex';
+                DIV.style.gap = '2rem';
+                DIV.style.justifyContent = 'space-between'
+                DIV.innerHTML = `
+               
+                    <input type='checkbox' onchange="isChecked('${nms.firstName}')"> <li style="list-style: none;" id="tg_${nms.firstName}">${nms.firstName}${" "}${nms.lastName}</li> </input>
+                    
+                <li style="list-style: none;" class='delteUSerfromSUggestion' onclick="delteUSerfrmSuggstion('${nms.firstName}')"> X </li>
+                            
+            `
+                searchAndInsert.appendChild(DIV)
+            }
+
+            // console.log(searchAndInsert)
+        }
+
+
+
+        function isChecked(nms) {
+            const check = document.getElementById(`tg_${nms}`).innerHTML;
+            values.push(check);
+        }
+
+
+        function delteUSerfrmSuggstion(nms) {
+            const get = document.getElementById(`target_${nms}`)
+            get.innerHTML = ''
+        }
 
 
         // decode the token
@@ -168,7 +298,8 @@
             const Div = document.createElement('div');
             Div.classList.add('users-inbox-design')
             Div.setAttribute("onclick", `switchUser('${users.id}','${users.name}', '${users.isOnline}')`) // adding attributes for the reicever for the chat and convert the object into string otherwise it will not work
-            Div.setAttribute('data-id', `${users.id}`)
+            Div.setAttribute('data-id', 'data-id')
+                // Div.setAttribute('data-id', `${users.id}`)
             if (users.isOnline) {
                 Div.innerHTML = `                        
                         <span>${users.name}</span>
@@ -178,6 +309,23 @@
                         <span>${users.name}</span>
                         <span class="target_${users.id} offline"><i class="fa-regular fa-circle-dot"></i></span>     `
             }
+
+            existingEmptyElement.appendChild(Div)
+                // Scroll to the bottom of the message container-->these two lines are used to add because if the messages are added then it will scroll-down to show the recent messages
+            const container = document.querySelector('.pos-absolute-message-box');
+            container.scrollTop = container.scrollHeight;
+        }
+
+
+        function showGroups(groupname) {
+            const existingEmptyElement = document.querySelector('.users-inbox');
+            const Div = document.createElement('div');
+            Div.classList.add('users-inbox-design')
+                // Div.setAttribute("onclick", `switchUser('${users.id}','${users.name}', '${users.isOnline}')`) // adding attributes for the reicever for the chat and convert the object into string otherwise it will not work
+                // Div.setAttribute('data-id', `${users.id}`)
+
+            Div.innerHTML = `                        
+                        <span>${groupname.name}</span>    `
 
             existingEmptyElement.appendChild(Div)
                 // Scroll to the bottom of the message container-->these two lines are used to add because if the messages are added then it will scroll-down to show the recent messages
@@ -244,6 +392,64 @@
 
         }
 
+
+
+
+        // show error message
+        function showMsg(msg) {
+            const emptyExistingElement = document.getElementById('showMsg')
+            emptyExistingElement.innerHTML = '';
+            const Div = document.createElement('div');
+            Div.classList.add('message');
+            Div.innerHTML = `
+               <span> ${msg}</span>
+            `;
+            emptyExistingElement.appendChild(Div)
+
+            // Remove the message after 3 seconds (adjust the duration as needed)
+            setTimeout(() => {
+                Div.classList.add('hide');
+                setTimeout(() => {
+                    Div.remove();
+                }, 1000); // Time for the hide animation to complete
+            }, 3000);
+        }
+
+
+        // for groups api calling
+        // submit and create the group
+        function sumitGroupDetails(e) {
+            e.preventDefault()
+            const token = localStorage.getItem('token');
+            const name = document.getElementById('name').value;
+            const groupPicture = document.getElementById('group-picture').value;
+
+
+            const data = {
+                name: name,
+                groupPicture: groupPicture,
+                groupMember: values
+
+            }
+
+            axios.post(`http://localhost:5000/group/create`,
+                    data, {
+                        headers: {
+                            'Authorization': token
+                        }
+                    })
+                .then((response) => {
+                    console.log(response.data.group.name);
+                    showGroups(response.data.group)
+                })
+                .catch(err => {
+                    console.log('something went wrong', err)
+                })
+
+
+            document.getElementById('name').value = '';
+            document.getElementById('group-picture').value = '';
+        }
 
 
 

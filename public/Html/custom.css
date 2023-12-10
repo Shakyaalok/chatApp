@@ -94,6 +94,13 @@ form>div>input {
     font-weight: 500;
 }
 
+form>div select {
+    padding: .2rem 2rem;
+    border-radius: .4rem;
+    font-weight: 500;
+    min-width: 16.2rem;
+}
+
 form>div>input:focus {
     outline: none;
 }
@@ -222,6 +229,9 @@ form>div {
     display: flex;
     flex-direction: column;
     color: white;
+    position: absolute;
+    left: 27%;
+    top: 1%;
 }
 
 .userNameAndStatus>span:nth-child(2) {
@@ -1024,4 +1034,42 @@ button:focus {
         border-top-right-radius: 6px;
         border-bottom-left-radius: 6px;
     }
+}
+
+
+/* closeForm */
+
+.createGroupForm {
+    position: relative;
+    right: -25%;
+    transform: translate(29%, -2%);
+    width: 66vh;
+    z-index: 100;
+}
+
+#formToggler {
+    background: url('https://images.unsplash.com/photo-1656231925500-3c7330f52599?auto=format&fit=crop&q=80&w=1524&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#closeForm {
+    position: relative;
+    left: 36%;
+    padding: 0.2rem 2rem;
+    background: red;
+    border-radius: 10px;
+}
+
+.delteUSerfromSUggestion {
+    position: relative;
+    left: 15%;
+    padding: 0.2rem 2rem;
+    /* background: red; */
+    border-radius: 10px;
+}
+
+#appedingSeachNamesToDom {
+    padding: 0.4rem 2rem;
 }

@@ -86,6 +86,59 @@ const getUsersMessage = async(req, res) => {
     }
 }
 
+const searchUser = async function(req, res) {
+    try {
+        const userId = req.user.id
+        const { key } = req.params;
+        const user = await User.findAll({
+            where: {
+                [Op.and]: [{
+                    [Op.or]: [{
+                            firstName: {
+                                [Op.like]: `%${key}%`,
+                            },
+                        },
+
+                        {
+                            lastName: {
+                                [Op.like]: `%${key}%`,
+                            },
+                        },
+
+                        {
+                            mobile: {
+                                [Op.like]: `%${Number(key)}%`,
+                            },
+                        }
 
 
-module.exports = { message, allMessage, allUsers, getUsersMessage }
+                    ]
+
+                }, {
+                    id: {
+                        [Op.ne]: userId,
+                    },
+                }, ]
+            },
+        })
+
+
+        if (user.length == 0) {
+            res.status(200).json({ message: 'select from the suggestion list' })
+            return;
+        }
+
+        // let data = {
+        //     names: user.map(user => user.firstName + ' ' + user.lastName, user.id),
+        // };
+
+        res.status(201).json(user)
+    } catch (error) {
+        res.status(200).json({ message: 'No user found!' })
+    }
+
+}
+
+
+
+module.exports = { message, allMessage, allUsers, getUsersMessage, searchUser }

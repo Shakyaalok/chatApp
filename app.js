@@ -18,13 +18,16 @@ const sequelize = require('./utils/db')
 
 // routes
 const userRoutes = require('./routes/user')
-const chatMessageRoutes = require('./routes/chatMessage')
+const chatMessageRoutes = require('./routes/chatMessage');
+const groupRoutes = require('./routes/group')
 
 
 
 // models
 const user = require('./models/user');
 const chatmessage = require('./models/chatMessage');
+const group = require('./models/group');
+const groupPart = require('./models/groupParticipant')
 
 
 
@@ -42,6 +45,8 @@ app.use(express.json())
 
 app.use('/user', userRoutes)
 app.use('/chat', chatMessageRoutes)
+app.use('/group', groupRoutes);
+
 
 
 // socket io
@@ -79,6 +84,9 @@ usp.on('connection', async function(socket) {
 // associations
 user.hasMany(chatmessage);
 chatmessage.belongsTo(user);
+// for groups
+user.belongsToMany(group, { through: groupPart });
+group.belongsToMany(user, { through: groupPart })
 
 
 sequelize
