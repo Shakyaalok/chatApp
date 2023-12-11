@@ -85,8 +85,38 @@ const create = async(req, res) => {
         res.status(200).json({ message: 'Something went wrong', error });
     }
 
-
-
 }
 
-module.exports = { create }
+const groupDetails = async(req, res) => {
+
+
+    try {
+        const details = await groupParticipant.findAll({ where: { userId: req.user.id } })
+            // console.log(details.groupId[0])
+
+        if (!details || details.length == 0) {
+            return;
+        }
+
+        // console.log('details.length----------------------', details.length)
+        res.status(201).json({ details })
+    } catch (error) {
+        res.status(200).json({ message: 'something went wrong', error: error })
+    }
+}
+
+const moreGroupDetails = async(req, res) => {
+    const { groupId } = req.params
+
+    try {
+        const GroupInfo = await groupParticipant.findAll({ where: { groupId: groupId } }) // how many users are linked to this group
+        const Members = GroupInfo.map(members => members.userId); // finding all the ids of the user linked to the group
+        const memberName = await Promise.all(Members.map(userId => User.findOne({ where: { id: userId } }))) // finding the userDetails by userId getting from the members
+        res.status(201).json({ GroupInfo, memberName })
+    } catch (error) {
+        console.log(error)
+        res.status(200).json({ message: 'something went wrong', error: error })
+    }
+}
+
+module.exports = { create, groupDetails, moreGroupDetails }

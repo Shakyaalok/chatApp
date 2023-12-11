@@ -124,8 +124,8 @@ const searchUser = async function(req, res) {
 
 
         if (user.length == 0) {
-            res.status(200).json({ message: 'select from the suggestion list' })
-            return;
+            return res.status(200).json({ message: 'select from the suggestion list' })
+
         }
 
         // let data = {

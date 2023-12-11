@@ -1073,3 +1073,23 @@ button:focus {
 #appedingSeachNamesToDom {
     padding: 0.4rem 2rem;
 }
+
+.moreDetailsOfGroup {
+    position: absolute;
+    top: 1.5%;
+    right: 3%;
+    cursor: pointer;
+}
+
+#showFetchedGroupDetails {
+    z-index: 2;
+    position: relative;
+    left: 39%;
+    width: 59%;
+    top: 14%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    transition: 1s;
+}

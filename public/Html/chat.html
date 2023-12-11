@@ -17,12 +17,18 @@
 
     <div class="container-fluid">
         <div class="row bg-success section-top">
-            <div class="col-sm-4 col-md-3 top-left text-white" onclick="createGroup()">
+            <div class="col-sm-3 col-md-2  text-white" onclick="createGroup()">
                 <div>
                     <button class="btn btn-success text-bg-primary" style="font-weight: bold;">Create Group</button>
                 </div>
             </div>
+
+            <div class="col-sm-1 col-md-1 text-white">
+                <div class="moreDetailsOfGroup" onclick="showMoreDtails()"></div>
+            </div>
+
             <div id="create-group-name"></div>
+            <div id="showFetchedGroupDetails"></div>
             <div class="col-sm-8 col-md-9" id="show-username-status"></div>
         </div>
 
@@ -211,7 +217,7 @@
                     }
                 })
                 .then((response) => {
-                    // console.log('id------>', response);
+                    console.log('id------>', response);
                     if (response.status == '201') {
                         console.log(response.data)
                         appendingSearchItem(response.data)
@@ -317,25 +323,10 @@
         }
 
 
-        function showGroups(groupname) {
-            const existingEmptyElement = document.querySelector('.users-inbox');
-            const Div = document.createElement('div');
-            Div.classList.add('users-inbox-design')
-                // Div.setAttribute("onclick", `switchUser('${users.id}','${users.name}', '${users.isOnline}')`) // adding attributes for the reicever for the chat and convert the object into string otherwise it will not work
-                // Div.setAttribute('data-id', `${users.id}`)
-
-            Div.innerHTML = `                        
-                        <span>${groupname.name}</span>    `
-
-            existingEmptyElement.appendChild(Div)
-                // Scroll to the bottom of the message container-->these two lines are used to add because if the messages are added then it will scroll-down to show the recent messages
-            const container = document.querySelector('.pos-absolute-message-box');
-            container.scrollTop = container.scrollHeight;
-        }
-
 
 
         // show all the message when the user click on the user 
+
 
         function showAllMessageOnUserClick(reciever_id) {
             const token = localStorage.getItem('token');
@@ -360,6 +351,8 @@
         // function when any click triggers on the user name of the chat like showing the chat related to the that users
         function switchUser(ID, name, isOnline) {
             const dpc = document.getElementById('displayChat');
+            const showThreeDotsOfGroup = document.querySelector('.moreDetailsOfGroup')
+            showThreeDotsOfGroup.innerHTML = ''
             dpc.innerHTML = "";
             showAllMessageOnUserClick(ID);
             showUserNameOnTop(ID, name, isOnline);
@@ -373,17 +366,24 @@
             userNameAndStatus.innerHTML = ''
             const Div = document.createElement('div');
             Div.classList.add('userNameAndStatus');
+
             if (isOnline === 'false') {
                 Div.innerHTML = `
            <span>${name} </span>
            <span class='targetst_${ID}'> offline </span>
   
             `;
-            } else {
+            } else if (isOnline === 'true') {
                 Div.innerHTML = `
            <span>${name} </span>
            <span class='targetst_${ID}'> online </span>
   
+            `;
+
+            } else {
+                Div.innerHTML = `
+             <span  style="font-size:1.2rem;">${name} </span>
+          
             `;
 
             }
@@ -417,7 +417,31 @@
 
 
         // for groups api calling
-        // submit and create the group
+
+        // shows the group when the page is loaded but it is post request so we have to make the get api from the backend
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            axios.get(`http://localhost:5000/group`, {
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then((response) => {
+                    console.log(response);
+                    for (const itm of response.data.details) {
+                        showGroups(itm)
+                    }
+                })
+                .catch(err => {
+                    console.log('something went wrong', err)
+                })
+
+
+
+        })
+
+        // submit and create the group******************************************************************
         function sumitGroupDetails(e) {
             e.preventDefault()
             const token = localStorage.getItem('token');
@@ -439,8 +463,14 @@
                         }
                     })
                 .then((response) => {
-                    console.log(response.data.group.name);
-                    showGroups(response.data.group)
+                    console.log(response);
+                    if (response.status == 200) {
+                        showMsg(response.data.message)
+                    } else {
+                        showGroups(response.data.group);
+                        window.location.href = '/chat.html'
+                    }
+
                 })
                 .catch(err => {
                     console.log('something went wrong', err)
@@ -449,10 +479,52 @@
 
             document.getElementById('name').value = '';
             document.getElementById('group-picture').value = '';
+
         }
 
 
 
+        function showGroups(grpname) {
+            const existingEmptyElement = document.querySelector('.users-group');
+            console.log('showgroups', existingEmptyElement)
+            const Div = document.createElement('div');
+            Div.style.background = '#cde1cd'
+            Div.classList.add('users-inbox-design')
+            Div.setAttribute("onclick", `switchGroup('${grpname.id}','${grpname.groupName}')`) // adding attributes for the reicever for the chat and convert the object into string otherwise it will not work
+                // Div.setAttribute('data-id', `${grpname.id}`)
+
+
+            Div.innerHTML = `                        
+            <span>${grpname.groupName ? grpname.groupName : grpname.name}</span>   `
+
+            existingEmptyElement.appendChild(Div)
+                // Scroll to the bottom of the message container-->these two lines are used to add because if the messages are added then it will scroll-down to show the recent messages
+                // window.location.href = '/chat.html'
+            const container = document.querySelector('.pos-absolute-message-box');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function switchGroup(ID, name) {
+            const dpc = document.getElementById('displayChat');
+            const showThreeDotsOfGroup = document.querySelector('.moreDetailsOfGroup');
+            showThreeDotsOfGroup.innerHTML = `<i class="fa fa-ellipsis-v" aria-hidden="true"></i>`
+            dpc.innerHTML = "";
+            showAllMessageOnUserClick(ID);
+            showUserNameOnTop(ID, name);
+            reciever_id = parseInt(`${ID}`) // to convert it into integer
+
+        }
+
+
+        function showMoreDtails() {
+            const htmlFile = document.getElementById('showFetchedGroupDetails');
+            fetch('/moreDetails.html')
+                .then(response => response.text())
+                .then(html => {
+                    htmlFile.innerHTML = html;
+                })
+                .catch(error => console.error('Error fetching content:', error));
+        }
 
 
         // update the user status immediately and its backend is broadCast--> online
