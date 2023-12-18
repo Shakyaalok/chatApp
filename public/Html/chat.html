@@ -24,11 +24,13 @@
             </div>
 
             <div class="col-sm-1 col-md-1 text-white">
-                <div class="moreDetailsOfGroup" onclick="showMoreDtails()"></div>
+                <div class="moreDetailsOfGroup"></div>
             </div>
 
             <div id="create-group-name"></div>
+
             <div id="showFetchedGroupDetails"></div>
+
             <div class="col-sm-8 col-md-9" id="show-username-status"></div>
         </div>
 
@@ -77,6 +79,7 @@
         var reciever_id;
         let values = []
         var sender_id = parseJwt(localStorage.getItem('token')).userId;
+        let userId = sender_id;
         // socket
         var socket = io('/user-namespace', {
             auth: {
@@ -484,18 +487,18 @@
 
 
 
-        function showGroups(grpname) {
+        function showGroups(grp) {
             const existingEmptyElement = document.querySelector('.users-group');
             console.log('showgroups', existingEmptyElement)
             const Div = document.createElement('div');
             Div.style.background = '#cde1cd'
             Div.classList.add('users-inbox-design')
-            Div.setAttribute("onclick", `switchGroup('${grpname.id}','${grpname.groupName}')`) // adding attributes for the reicever for the chat and convert the object into string otherwise it will not work
+            Div.setAttribute("onclick", `switchGroup('${grp.groupId}','${grp.groupName}')`) // adding attributes for the reicever for the chat and convert the object into string otherwise it will not work
                 // Div.setAttribute('data-id', `${grpname.id}`)
 
 
             Div.innerHTML = `                        
-            <span>${grpname.groupName ? grpname.groupName : grpname.name}</span>   `
+            <span>${grp.groupName ? grp.groupName : grp.name}</span>   `
 
             existingEmptyElement.appendChild(Div)
                 // Scroll to the bottom of the message container-->these two lines are used to add because if the messages are added then it will scroll-down to show the recent messages
@@ -506,9 +509,11 @@
 
         function switchGroup(ID, name) {
             const dpc = document.getElementById('displayChat');
+            const existingEmptyElement = document.getElementById('showFetchedGroupDetails');
             const showThreeDotsOfGroup = document.querySelector('.moreDetailsOfGroup');
-            showThreeDotsOfGroup.innerHTML = `<i class="fa fa-ellipsis-v" aria-hidden="true"></i>`
+            showThreeDotsOfGroup.innerHTML = `<i class="fa fa-ellipsis-v dot-cross" style="display:block;" aria-hidden="true"  onclick="showMoreDtails('${ID}')"></i>`
             dpc.innerHTML = "";
+            existingEmptyElement.innerHTML = ''
             showAllMessageOnUserClick(ID);
             showUserNameOnTop(ID, name);
             reciever_id = parseInt(`${ID}`) // to convert it into integer
@@ -516,14 +521,140 @@
         }
 
 
-        function showMoreDtails() {
-            const htmlFile = document.getElementById('showFetchedGroupDetails');
-            fetch('/moreDetails.html')
-                .then(response => response.text())
-                .then(html => {
-                    htmlFile.innerHTML = html;
+
+        function showMoreDtails(groupId) {
+            console.log(groupId)
+            const token = localStorage.getItem('token')
+            axios.get(`http://localhost:5000/group/more/${groupId}`, {
+                    headers: {
+                        'Authorization': token
+                    }
                 })
-                .catch(error => console.error('Error fetching content:', error));
+                .then((response) => {
+                    console.log(response)
+                    console.log(response.data.membersInfo);
+                    moreStailsInsteringToDom(response.data.membersInfo, response.data.GroupInfo, response.data.count)
+
+                })
+
+
+        }
+
+
+        function moreStailsInsteringToDom(membersInfo, groupsInfo, groupParticipants) {
+            const existingEmptyElement = document.getElementById('showFetchedGroupDetails');
+            const closeThreeDots = document.querySelector('.moreDetailsOfGroup');
+            console.log('groupsInfo', groupsInfo[0].groupId)
+            closeThreeDots.innerHTML = `<i class="fa-regular fa-x" onclick="closemoreDetails('${groupsInfo[0].groupId}')"></i>`
+            existingEmptyElement.innerHTML = ''
+
+            // Display group name only once
+            const groupNameDiv = document.createElement('div');
+            groupNameDiv.style.width = '100%'
+            groupNameDiv.style.background = 'grey'
+            groupNameDiv.style.textAlign = 'center'
+            groupNameDiv.style.color = 'white'
+            groupNameDiv.innerHTML = `<h2>${groupsInfo[0].GroupName}</h2>`;
+            existingEmptyElement.append(groupNameDiv);
+
+            const participant = document.createElement('div');
+            participant.classList.add('participantStyles')
+            participant.innerHTML = `<div> 
+                                    <span>Participants</span>
+                                    <span>${groupParticipants}
+                                        </span>
+                                    </div>  `
+            existingEmptyElement.append(participant);
+
+
+            const editButton = document.createElement('div');
+            editButton.classList.add('editButton-onmoredetails')
+            editButton.innerHTML = `<button>Edit</button>`;
+            existingEmptyElement.append(editButton)
+            editButton.addEventListener('click', function() {
+                editDetails(groupsInfo)
+            });
+
+
+            const groupId = groupsInfo[0].groupId
+            const token = localStorage.getItem('token')
+            axios.get(`http://localhost:5000/group/${groupId}/${userId}`, {
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then(response => {
+                    if (!response.data.isAdminOrnot.isAdmin) {
+                        document.querySelector('.editButton-onmoredetails').style.display = 'none'
+                    } else {
+                        document.querySelector('.editButton-onmoredetails').style.display = 'block'
+                    }
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+
+
+
+            for (let i = 0; i < membersInfo.length; i++) {
+                const isAdmin = groupsInfo[i].isAdmin ? 'Group Admin' : '';
+                const DIV = document.createElement('div');
+                DIV.innerHTML = ` 
+                          <div class='member-name-isAdmin'>
+                              <h5 id='target_${groupsInfo[i].userId}'> <input type='checkbox' onchange="getIsAdmin('${groupsInfo[i].userId}')"  class='editable' style='display:none'> </input>${membersInfo[i].fullName}</h5>
+                              <h6>${isAdmin}</h6>
+                          </div>
+                        `;
+                existingEmptyElement.append(DIV)
+            }
+        }
+
+
+        function editDetails(groupsInfo) {
+            // we can iterate the nodelist by the forEach or simple for loop
+            const submitButton = document.querySelector('.editButton-onmoredetails');
+            const checkBoxes = document.querySelectorAll('.editable');
+
+            checkBoxes.forEach(chechk => {
+                chechk.style.display = 'inline-block'
+            })
+
+            submitButton.classList.add('editButton-onmoredetails')
+            submitButton.innerHTML = `<button onclick="SubmitDetailsOfGroup('${groupsInfo[0].groupId}')">Submit</button>`;
+        }
+
+        const userIds = [];
+
+        function getIsAdmin(ID) {
+            const selectedUser = document.getElementById(`target_${ID}`);
+            if (ID == selectedUser.id.split('_')[1]) {
+                userIds.push(Number(ID))
+            }
+        }
+
+        function SubmitDetailsOfGroup(grpId) {
+            const token = localStorage.getItem('token');
+            axios.get(`http://localhost:5000/group/edit/${grpId}/${JSON.stringify(userIds)}`, {
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then(response => {
+                    console.log('checkbox-respomse', response);
+                    window.location.href = 'chat.html'
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
+
+
+
+        function closemoreDetails(ID) {
+            const moreDetailsOfGroup = document.getElementById('showFetchedGroupDetails');
+            const closeThreeDots = document.querySelector('.moreDetailsOfGroup');
+            moreDetailsOfGroup.innerHTML = ''
+            closeThreeDots.innerHTML = `<i class="fa fa-ellipsis-v dot-cross" style="display:block;" aria-hidden="true"  onclick="showMoreDtails('${ID}')"></i>`
         }
 
 

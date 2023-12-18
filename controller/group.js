@@ -107,16 +107,58 @@ const groupDetails = async(req, res) => {
 
 const moreGroupDetails = async(req, res) => {
     const { groupId } = req.params
-
+    let count;
     try {
-        const GroupInfo = await groupParticipant.findAll({ where: { groupId: groupId } }) // how many users are linked to this group
-        const Members = GroupInfo.map(members => members.userId); // finding all the ids of the user linked to the group
-        const memberName = await Promise.all(Members.map(userId => User.findOne({ where: { id: userId } }))) // finding the userDetails by userId getting from the members
-        res.status(201).json({ GroupInfo, memberName })
+        const GroupDetails = await groupParticipant.findAll({ where: { groupId: groupId } }) // how many users are linked to this group
+        const Members = GroupDetails.map(members => members.userId); // finding all the ids of the user linked to the group
+        const memberDetails = await Promise.all(Members.map(userId => User.findOne({ where: { id: userId } }))) // finding the userDetails by userId getting from the members
+        count = memberDetails.length;
+
+
+        // separate out some data from user
+        const membersInfo = memberDetails.map(member => ({
+            fullName: member.firstName + " " + member.lastName,
+            mobile: member.mobile,
+            groupName: member.groupName,
+            isOnline: member.isOnline
+        }))
+
+        // from the group participate
+        const GroupInfo = GroupDetails.map(group => ({
+            GroupName: group.groupName,
+            isAdmin: group.isAdmin,
+            userId: group.userId,
+            groupId: group.groupId
+
+        }))
+
+        res.status(201).json({ membersInfo, GroupInfo, count })
     } catch (error) {
         console.log(error)
         res.status(200).json({ message: 'something went wrong', error: error })
     }
 }
 
-module.exports = { create, groupDetails, moreGroupDetails }
+const makeGroupUserAdmin = async(req, res) => {
+    let { groupId, usrIds } = req.params;
+    let userIds = JSON.parse(usrIds)
+
+    // //it is used for finding the users associate with the groups id 
+    // const grpParticipants = await groupParticipant.findAll({ where: { groupId: groupId } })
+
+    await Promise.all(userIds.map(async(id) => {
+        return await groupParticipant.update({ isAdmin: true }, { where: { groupId: groupId, userId: id } })
+    }))
+    res.json({ message: 'successfully Updated' })
+}
+
+const loginUserisAdmin = async(req, res) => {
+    const { userId, groupId } = req.params;
+
+    const isAdminOrnot = await groupParticipant.findOne({ where: { userId: userId, groupId: groupId } });
+
+    res.status(201).json({ isAdminOrnot })
+
+}
+
+module.exports = { create, groupDetails, moreGroupDetails, makeGroupUserAdmin, loginUserisAdmin }

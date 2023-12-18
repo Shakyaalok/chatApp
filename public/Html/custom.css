@@ -1089,7 +1089,53 @@ button:focus {
     top: 14%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    /* align-items: center; */
     background: white;
     transition: 1s;
+    position: relative;
+}
+
+.participantStyles {
+    display: flex;
+    gap: 1rem;
+    font-size: 1.5rem;
+    margin-top: 1rem;
+}
+
+.participantStyles span:nth-child(2) {
+    border-radius: 53%;
+    background: green;
+    padding: 0.2rem 0.34rem;
+    color: white;
+}
+
+.participantStyles>div {
+    margin: auto;
+}
+
+.member-name-isAdmin {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.member-name-isAdmin h6 {
+    font-size: .8rem;
+    font-weight: 700;
+    color: green;
+}
+
+.editButton-onmoredetails {
+    position: absolute;
+    bottom: 3%;
+    right: 4%;
+}
+
+.editButton-onmoredetails>button {
+    background: #198754;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    padding: 0.4rem 2rem;
+    border-radius: 10px;
 }
