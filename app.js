@@ -5,6 +5,8 @@ const cors = require('cors')
 const app = express();
 const server = http.createServer(app); // requiremet for the socet io-2
 const io = require('socket.io')(server); // requiremet for the socet io-3
+const cronJob = require('cron')
+const { Op } = require('sequelize')
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -28,6 +30,9 @@ const user = require('./models/user');
 const chatmessage = require('./models/chatMessage');
 const group = require('./models/group');
 const groupPart = require('./models/groupParticipant')
+const moveChatsToAnother = require('./models/archivedChats');
+const User = require('./models/user');
+const archivedChats = require('./models/archivedChats');
 
 
 
@@ -89,6 +94,55 @@ chatmessage.belongsTo(user);
 // for groups
 user.belongsToMany(group, { through: groupPart });
 group.belongsToMany(user, { through: groupPart })
+
+
+
+// using cron to delete the message which is 1 day message
+const job = new cronJob.CronJob(
+    '*/10 * * * * *', // cronTime
+    async function() {
+        try {
+
+            const oneHourAgo = new Date();
+            oneHourAgo.setDate(oneHourAgo.getDate() - 1);
+
+
+            const oldChats = await chatmessage.findAll({
+                where: {
+                    createdAt: {
+                        [Op.lt]: oneHourAgo
+                    }
+                }
+            }); // getting all the chats
+            for (const chats of oldChats) {
+                let shiftChat = {
+                    sender_id: chats.sender_id,
+                    reciever_id: chats.reciever_id,
+                    message: chats.message,
+                    group_id: chats.group_id,
+                    createdAt: chats.createdAt,
+                    updatedAt: chats.updatedAt
+                }
+                await archivedChats.create(shiftChat)
+            }
+
+            await chatmessage.destroy({
+                where: {
+                    createdAt: {
+                        [Op.lt]: oneHourAgo
+                    }
+                }
+            });
+
+            console.log(`${oldChats.length} old chats has been deleted`)
+        } catch (error) {
+            console.log('Error in deleting the old chats', error)
+        }
+    }, // onTick
+    null, // onComplete
+    true, // start
+    'America/Los_Angeles' // timeZone
+);
 
 
 sequelize
