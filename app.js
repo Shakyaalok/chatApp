@@ -75,7 +75,9 @@ usp.on('connection', async function(socket) {
 
     //chatting implementation
     socket.on('newChat', function(data) {
+        console.log('msg sending', data)
         socket.broadcast.emit('loadnewChat', data)
+        console.log('loadnewChat sended', data)
     })
 
 })

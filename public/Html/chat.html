@@ -78,7 +78,7 @@
         // meesage sent on enterbutton
         let values = []
         var reciever_id;
-        let group_id;
+        var group_id;
         var sender_id = parseJwt(localStorage.getItem('token')).userId;
         let userId = sender_id;
         // socket
@@ -93,14 +93,26 @@
 
             const token = localStorage.getItem('token');
             const sender_id = parseJwt(token).userId
+            const group = document.getElementById("displayedChatContanerGroup");
             console.log(token)
                 // const isGroupChat
-            axios.post(`http://localhost:5000/chat`, {
-                    message,
-                    sender_id,
-                    reciever_id,
-                    group_id
-                }, {
+            let msgObj = {
+                message,
+                sender_id,
+            }
+            if (reciever_id) {
+                msgObj = {
+                    ...msgObj,
+                    reciever_id
+                }
+            }
+            if (group && group.value) {
+                msgObj = {
+                    ...msgObj,
+                    group_id: parseInt(group.value)
+                }
+            }
+            axios.post(`http://localhost:5000/chat`, msgObj, {
                     headers: {
                         'Authorization': token
                     }
@@ -294,27 +306,31 @@
             const userId = document.getElementById(`checkbox_${ID}`).id.split('_')[1];
             const isAdminID = document.getElementById(`dropdown_${ID}`).id.split('_')[1];
             let userData;
-            // if (!checkBolean.checked) {
-            //     alert(checkBolean.checked)
-            // }
+            let userAlreadyAdded = data.findIndex(item => item.userId == Number(userId))
 
             if (checkBolean.checked) {
                 if (userId == ID && isAdminID == ID) {
                     userData = {
                         userId: Number(userId),
                         isAdmin: true,
+                    };
+
+                    if (userAlreadyAdded !== -1) {
+                        //if exists update
+                        data[userAlreadyAdded] = userData
+                    } else {
+                        // other wise
+                        data.push(userData)
                     }
                 }
             } else {
-                userData = {
-                    userId: Number(userId),
-                    isAdmin: false,
-                }
+                // if chechkbox is cheched then remove the user
+                data.splice(userAlreadyAdded, 1);
+
             }
 
 
 
-            data.push(userData);
             console.log(data)
         }
 
@@ -339,10 +355,20 @@
 
         function addMsgInBox(allmsg) {
             const dpc = document.getElementById('displayChat');
-            const displayedChatContanerUserId = document.getElementById("displayedChatContaner").value;
-            if (allmsg.sender_id && (allmsg.reciever_id == displayedChatContanerUserId || allmsg.sender_id == displayedChatContanerUserId)) {
+            const displayId = (allmsg.group_id) ? "displayedChatContanerGroup" : "displayedChatContaner"
+
+            const displayedChatContanerUserId = document.getElementById(displayId).value;
+            //ts-ingore
+            if (allmsg.sender_id && ((!!allmsg.reciever_id && allmsg.reciever_id == displayedChatContanerUserId) || allmsg.sender_id == displayedChatContanerUserId)) {
                 const className = (allmsg.sender_id == sender_id) ? "sender" : "repaly";
                 console.log("sended msg")
+                const li = document.createElement('li');
+                li.classList.add(className)
+                li.innerHTML = `<p> ${allmsg.message} </p>
+                        <span class="time">${allmsg.createdAt}</span>`;
+                dpc.appendChild(li)
+            } else if (allmsg.group_id) {
+                const className = (allmsg.sender_id == sender_id) ? "sender" : "repaly";
                 const li = document.createElement('li');
                 li.classList.add(className)
                 li.innerHTML = `<p> ${allmsg.message} </p>
@@ -443,33 +469,27 @@
 
         }
 
-        function showUserNameOnTop(ID, name, isOnline) {
+        function showUserNameOnTop(ID, name, isOnline = '', group_id = 0) {
             console.log(isOnline);
             const userNameAndStatus = document.getElementById('show-username-status');
             userNameAndStatus.innerHTML = ''
             const Div = document.createElement('div');
             Div.classList.add('userNameAndStatus');
-
-            if (isOnline === 'false') {
+            const userStatus = (isOnline === "true") ? 'online' : 'offline';
+            if (group_id == 0) {
                 Div.innerHTML = `
-           <span><input type="hidden" id="displayedChatContaner" value="${ID}"/>${name} </span>
-           <span class='targetst_${ID}'> offline </span>
-  x
-            `;
-            } else if (isOnline === 'true') {
-                Div.innerHTML = `
-           <span><input type="hidden" id="displayedChatContaner" value="${ID}"/>${name} </span>
-           <span class='targetst_${ID}'> online </span>
-  
-            `;
-
+           <span><input type="hidden" id="displayedChatContaner" value="${ID}"/>${name} 
+            </span><span class='targetst_${ID}'>  ${userStatus} </span>
+           `;
             } else {
                 Div.innerHTML = `
-             <span  style="font-size:1.2rem;"><input type="hidden" id="displayedChatContaner" value="${ID}"/>${name} </span>
+             <span  style="font-size:1.2rem;"><input type="hidden" id="displayedChatContanerGroup" value="${group_id}"/>${name} </span>
           
             `;
-
             }
+
+
+
 
             userNameAndStatus.appendChild(Div)
 
@@ -595,7 +615,7 @@
             dpc.innerHTML = "";
             existingEmptyElement.innerHTML = ''
             showGroupMessagesOnUserClick(ID);
-            showUserNameOnTop(ID, name);
+            showUserNameOnTop(0, name, '', ID);
             group_id = parseInt(`${ID}`) // to convert it into integer
             console.log('this is groupId------->', group_id)
 
@@ -674,8 +694,10 @@
                 .then(response => {
                     if (!response.data.isAdminOrnot.isAdmin) {
                         document.querySelector('.editButton-onmoredetails').style.display = 'none'
+                        document.querySelector('.newMemberAddedHeading').style.display = 'none'
                     } else {
                         document.querySelector('.editButton-onmoredetails').style.display = 'block'
+                        document.querySelector('.newMemberAddedHeading').style.display = 'inline-block'
                     }
                 })
                 .catch(err => {
@@ -702,6 +724,8 @@
 
             const newMember = document.createElement('div');
             newMember.classList.add('newMemberAddedHeading');
+            // newMember.setAttribute('style', 'display:block;') or
+            newMember.style.display = 'none';
             newMember.innerHTML = `<div>
                                      <div>Add a new Member</div>
                                   <input type='text' class="searchAddedMemberForGroup" onchange="searchNewUsertoAddInGroup(${groupsInfo[0].groupId})"  placeholder='search members'>
@@ -752,7 +776,7 @@
             })
 
             submitButton.classList.add('editButton-onmoredetails')
-            submitButton.innerHTML = `<button onclick="SubmitDetailsOfGroup('${groupsInfo[0].groupId}')">Submit</button>`;
+            submitButton.innerHTML = `<button onclick="SubmitDetailsOfGroup('${groupsInfo[0].groupId}')">Make Admin</button>`;
         }
 
         const userIds = [];
@@ -814,7 +838,8 @@
                     }
                 })
                 .then(response => {
-                    console.log('Added', response)
+                    console.log('Added', response);
+                    window.location.href = '/chat.html'
                 })
                 .catch(err => {
                     console.log(err)

@@ -1121,7 +1121,6 @@ button:focus {
 
 .searchAddedMemberForGroup {
     height: 1.5rem;
-    width: 90%;
     font-size: 1rem;
 }
 
@@ -1168,11 +1167,10 @@ button:focus {
 
 #showNewUserAppended>div {
     display: flex;
-    justify-content: space-between;
+    gap: 0.5rem;
 }
 
 .newMemberaddedMakeAdmin {
-    width: 30%;
     font-size: 0.8rem;
     height: fit-content;
     margin-top: 0.7rem;
