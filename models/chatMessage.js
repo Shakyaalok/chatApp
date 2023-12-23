@@ -13,11 +13,15 @@ const chatMessage = sequelize.define('chatmessage', {
     },
     reciever_id: {
         type: Sequelize.INTEGER,
+        allowNull: true,
 
     },
     message: {
         type: Sequelize.TEXT // text is used for longer message
-
+    },
+    group_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
     }
 }, { timestamps: true })
 

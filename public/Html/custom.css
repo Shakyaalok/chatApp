@@ -198,6 +198,7 @@ form>div {
     border-radius: 4px;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     animation: slide-in 1s forwards;
+    z-index: 10;
     /* Animation duration and direction */
 }
 
@@ -1072,6 +1073,13 @@ button:focus {
 
 #appedingSeachNamesToDom {
     padding: 0.4rem 2rem;
+    background-color: black;
+}
+
+#appedingSeachNamesToDom div {
+    display: flex;
+    gap: 2rem;
+    justify-content: space-between;
 }
 
 .moreDetailsOfGroup {
@@ -1089,17 +1097,15 @@ button:focus {
     top: 14%;
     display: flex;
     flex-direction: column;
-    /* align-items: center; */
     background: white;
     transition: 1s;
-    position: relative;
 }
 
-.participantStyles {
+.participantStyles,
+.newMemberAddedHeading {
     display: flex;
     gap: 1rem;
     font-size: 1.5rem;
-    margin-top: 1rem;
 }
 
 .participantStyles span:nth-child(2) {
@@ -1110,13 +1116,32 @@ button:focus {
 }
 
 .participantStyles>div {
-    margin: auto;
+    margin: 1rem auto;
+}
+
+.searchAddedMemberForGroup {
+    height: 1.5rem;
+    width: 90%;
+    font-size: 1rem;
+}
+
+.searchAddedMemberForGroup:focus {
+    outline: none;
 }
 
 .member-name-isAdmin {
     display: flex;
     gap: 1rem;
     align-items: center;
+    position: relative;
+}
+
+.delete-user-from-group {
+    position: absolute;
+    right: 37%;
+    color: red;
+    font-size: 1rem;
+    cursor: pointer;
 }
 
 .member-name-isAdmin h6 {
@@ -1127,8 +1152,9 @@ button:focus {
 
 .editButton-onmoredetails {
     position: absolute;
-    bottom: 3%;
+    bottom: 0%;
     right: 4%;
+    z-index: 100;
 }
 
 .editButton-onmoredetails>button {
@@ -1138,4 +1164,21 @@ button:focus {
     font-size: 1.2rem;
     padding: 0.4rem 2rem;
     border-radius: 10px;
+}
+
+#showNewUserAppended>div {
+    display: flex;
+    justify-content: space-between;
+}
+
+.newMemberaddedMakeAdmin {
+    width: 30%;
+    font-size: 0.8rem;
+    height: fit-content;
+    margin-top: 0.7rem;
+    border-color: #198754;
+}
+
+.newMemberaddedMakeAdmin:focus {
+    outline: none;
 }

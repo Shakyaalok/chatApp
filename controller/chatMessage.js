@@ -8,13 +8,22 @@ const message = async(req, res) => {
     try {
         const userId = req.user.id;
         // console.log('userId', userId);
-        const { message, reciever_id, sender_id } = req.body
+        const { message, reciever_id, sender_id, group_id } = req.body
+
         if (!message) {
             await t.rollback();
             return res.status(200).json({ message: "message is required" });
         }
 
-        let newMsg = await chatMessage.create({ message, reciever_id, sender_id, userId })
+        let newMsg;
+        if (group_id) {
+            // group chat
+            newMsg = await chatMessage.create({ message, sender_id, userId, group_id })
+        } else {
+            // one to one chat
+            newMsg = await chatMessage.create({ message, sender_id, reciever_id, userId })
+        }
+
         await t.commit();
         res.status(201).json(newMsg)
     } catch (error) {

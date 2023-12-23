@@ -76,8 +76,9 @@
 
     <script>
         // meesage sent on enterbutton
-        var reciever_id;
         let values = []
+        var reciever_id;
+        let group_id;
         var sender_id = parseJwt(localStorage.getItem('token')).userId;
         let userId = sender_id;
         // socket
@@ -93,10 +94,12 @@
             const token = localStorage.getItem('token');
             const sender_id = parseJwt(token).userId
             console.log(token)
+                // const isGroupChat
             axios.post(`http://localhost:5000/chat`, {
                     message,
                     sender_id,
-                    reciever_id
+                    reciever_id,
+                    group_id
                 }, {
                     headers: {
                         'Authorization': token
@@ -236,37 +239,85 @@
                 })
         }
 
+
+
         function appendingSearchItem(names) {
-            const searchAndInsert = document.getElementById('appedingSeachNamesToDom');
-            searchAndInsert.style.background = 'black'
-            searchAndInsert.innerHTML = ''
+            let searchAndInsert = document.getElementById('appedingSeachNamesToDom');
+            if (!searchAndInsert) { // for adding new members in group
+                searchAndInsert = document.getElementById('showNewUserAppended');
+                searchAndInsert.innerHTML = ''
 
-            for (const nms of names) {
-                const DIV = document.createElement('div')
-                console.log(DIV)
-                DIV.setAttribute('id', `target_${nms.firstName}`)
-                DIV.style.display = 'flex';
-                DIV.style.gap = '2rem';
-                DIV.style.justifyContent = 'space-between'
-                DIV.innerHTML = `
-               
-                    <input type='checkbox' onchange="isChecked('${nms.firstName}')"> <li style="list-style: none;" id="tg_${nms.firstName}">${nms.firstName}${" "}${nms.lastName}</li> </input>
+                for (const nms of names) {
+                    const DIV = document.createElement('div')
+                    console.log(DIV)
+                    DIV.setAttribute('id', `target_${nms.firstName}`)
+                    DIV.innerHTML = `        
                     
-                <li style="list-style: none;" class='delteUSerfromSUggestion' onclick="delteUSerfrmSuggstion('${nms.firstName}')"> X </li>
-                            
-            `
-                searchAndInsert.appendChild(DIV)
+                    <select class="newMemberaddedMakeAdmin" id='dropdown_${nms.id}''>
+                        <option value='false'>Not make Admin</option>
+                        <option value='true'>Make Admin</option>
+                        </select >
+                        <input type='checkbox' id='checkbox_${nms.id}' onchange="putNewMemberData('${nms.id}')"> <li style="list-style: none;"  id=${nms.id}>${nms.firstName}${" "}${nms.lastName}</li> </input>
+                    <li style="list-style: none;" class='delteUSerfromSUggestion' onclick="delteUSerfrmSuggstion('${nms.firstName}')"> X </li>
+                               
+                                `
+                    searchAndInsert.appendChild(DIV)
+                }
+            } else { // for creating the group
+                searchAndInsert.innerHTML = ''
+
+                for (const nms of names) {
+                    const DIV = document.createElement('div')
+                    console.log(DIV)
+                    DIV.setAttribute('id', `target_${nms.firstName}`)
+                    DIV.innerHTML = `        
+        <input type='checkbox' id='${nms.id}' onchange="isChecked('${nms.firstName}')"> <li style="list-style: none;" id="tg_${nms.firstName}">${nms.firstName}${" "}${nms.lastName}</li> </input>
+        <li style="list-style: none;" class='delteUSerfromSUggestion' onclick="delteUSerfrmSuggstion('${nms.firstName}')"> X </li>
+                    `
+                    searchAndInsert.appendChild(DIV)
+                }
+
             }
-
-            // console.log(searchAndInsert)
         }
-
 
 
         function isChecked(nms) {
             const check = document.getElementById(`tg_${nms}`).innerHTML;
+            console.log(check)
             values.push(check);
         }
+
+        let data = [];
+
+        function putNewMemberData(ID) {
+            const checkBolean = document.getElementById(`checkbox_${ID}`);
+            const userId = document.getElementById(`checkbox_${ID}`).id.split('_')[1];
+            const isAdminID = document.getElementById(`dropdown_${ID}`).id.split('_')[1];
+            let userData;
+            // if (!checkBolean.checked) {
+            //     alert(checkBolean.checked)
+            // }
+
+            if (checkBolean.checked) {
+                if (userId == ID && isAdminID == ID) {
+                    userData = {
+                        userId: Number(userId),
+                        isAdmin: true,
+                    }
+                }
+            } else {
+                userData = {
+                    userId: Number(userId),
+                    isAdmin: false,
+                }
+            }
+
+
+
+            data.push(userData);
+            console.log(data)
+        }
+
 
 
         function delteUSerfrmSuggstion(nms) {
@@ -288,18 +339,23 @@
 
         function addMsgInBox(allmsg) {
             const dpc = document.getElementById('displayChat');
-            const className = (allmsg.sender_id == sender_id) ? "sender" : "repaly";
-            console.log("sended msg")
-            const li = document.createElement('li');
-            li.classList.add(className)
-            li.innerHTML = `<p> ${allmsg.message} </p>
-                    <span class="time">${allmsg.createdAt}</span>`;
-            dpc.appendChild(li)
+            const displayedChatContanerUserId = document.getElementById("displayedChatContaner").value;
+            if (allmsg.sender_id && (allmsg.reciever_id == displayedChatContanerUserId || allmsg.sender_id == displayedChatContanerUserId)) {
+                const className = (allmsg.sender_id == sender_id) ? "sender" : "repaly";
+                console.log("sended msg")
+                const li = document.createElement('li');
+                li.classList.add(className)
+                li.innerHTML = `<p> ${allmsg.message} </p>
+                        <span class="time">${allmsg.createdAt}</span>`;
+                dpc.appendChild(li)
+            }
 
 
-            // Scroll to the bottom of the message container-->these two lines are used to add because if the messages are added then it will scroll-down to show the recent messages
-            // const container = document.querySelector('.pos-absolute-message-box');
-            // container.scrollTop = container.scrollHeight;
+
+            // // Scroll to the bottom of the message container-->these two lines are used to add because if the messages are added then it will scroll-down to show the recent messages
+            // // const container = document.querySelector('.pos-absolute-message-box');
+            // // container.scrollTop = container.scrollHeight;
+
         }
 
         function showUsers(users) {
@@ -351,6 +407,30 @@
                 })
         }
 
+
+        // show all the message when the user click on the user 
+
+
+        function showGroupMessagesOnUserClick(group_Id) {
+            const token = localStorage.getItem('token');
+            // console.log(token)
+            axios.get(`http://localhost:5000/group/${group_Id}`, {
+                headers: {
+                    'Authorization': token
+                }
+            })
+
+            .then((response) => {
+                    console.log(response);
+                    for (const allmsg of response.data.data) {
+                        addMsgInBox(allmsg)
+                    }
+                })
+                .catch((err) => {
+                    console.log('something went wrong', err)
+                })
+        }
+
         // function when any click triggers on the user name of the chat like showing the chat related to the that users
         function switchUser(ID, name, isOnline) {
             const dpc = document.getElementById('displayChat');
@@ -372,20 +452,20 @@
 
             if (isOnline === 'false') {
                 Div.innerHTML = `
-           <span>${name} </span>
+           <span><input type="hidden" id="displayedChatContaner" value="${ID}"/>${name} </span>
            <span class='targetst_${ID}'> offline </span>
-  
+  x
             `;
             } else if (isOnline === 'true') {
                 Div.innerHTML = `
-           <span>${name} </span>
+           <span><input type="hidden" id="displayedChatContaner" value="${ID}"/>${name} </span>
            <span class='targetst_${ID}'> online </span>
   
             `;
 
             } else {
                 Div.innerHTML = `
-             <span  style="font-size:1.2rem;">${name} </span>
+             <span  style="font-size:1.2rem;"><input type="hidden" id="displayedChatContaner" value="${ID}"/>${name} </span>
           
             `;
 
@@ -514,9 +594,10 @@
             showThreeDotsOfGroup.innerHTML = `<i class="fa fa-ellipsis-v dot-cross" style="display:block;" aria-hidden="true"  onclick="showMoreDtails('${ID}')"></i>`
             dpc.innerHTML = "";
             existingEmptyElement.innerHTML = ''
-            showAllMessageOnUserClick(ID);
+            showGroupMessagesOnUserClick(ID);
             showUserNameOnTop(ID, name);
-            reciever_id = parseInt(`${ID}`) // to convert it into integer
+            group_id = parseInt(`${ID}`) // to convert it into integer
+            console.log('this is groupId------->', group_id)
 
         }
 
@@ -540,6 +621,7 @@
 
         }
 
+        var usersInGroups = [];
 
         function moreStailsInsteringToDom(membersInfo, groupsInfo, groupParticipants) {
             const existingEmptyElement = document.getElementById('showFetchedGroupDetails');
@@ -564,15 +646,21 @@
                                     <span>${groupParticipants}
                                         </span>
                                     </div>  `
+            console.log(usersInGroups)
             existingEmptyElement.append(participant);
+
+
 
 
             const editButton = document.createElement('div');
             editButton.classList.add('editButton-onmoredetails')
-            editButton.innerHTML = `<button>Edit</button>`;
+            editButton.innerHTML = `<button id='editButton'>Edit</button> <button id='Add'>Add</button>`;
             existingEmptyElement.append(editButton)
-            editButton.addEventListener('click', function() {
+            document.getElementById('editButton').addEventListener('click', function() {
                 editDetails(groupsInfo)
+            });
+            document.getElementById('Add').addEventListener('click', function() {
+                makeChanges(groupsInfo[0].GroupName, groupsInfo[0].groupId)
             });
 
 
@@ -597,26 +685,70 @@
 
 
             for (let i = 0; i < membersInfo.length; i++) {
+                usersInGroups.push(groupsInfo[i].userId)
                 const isAdmin = groupsInfo[i].isAdmin ? 'Group Admin' : '';
                 const DIV = document.createElement('div');
                 DIV.innerHTML = ` 
-                          <div class='member-name-isAdmin'>
+                          <div class='member-name-isAdmin member-name-isAdmin_${groupsInfo[i].userId}'>
                               <h5 id='target_${groupsInfo[i].userId}'> <input type='checkbox' onchange="getIsAdmin('${groupsInfo[i].userId}')"  class='editable' style='display:none'> </input>${membersInfo[i].fullName}</h5>
-                              <h6>${isAdmin}</h6>
+                              <h6>${isAdmin} </h6>
+                              <span class="delete-user-from-group" style="display:none;" onclick='DeleteFromGroup(${groupsInfo[i].userId},${groupsInfo[0].groupId})'> <i class="fa-regular fa-x" ></i> </span>
                           </div>
                         `;
                 existingEmptyElement.append(DIV)
+
             }
+
+
+            const newMember = document.createElement('div');
+            newMember.classList.add('newMemberAddedHeading');
+            newMember.innerHTML = `<div>
+                                     <div>Add a new Member</div>
+                                  <input type='text' class="searchAddedMemberForGroup" onchange="searchNewUsertoAddInGroup(${groupsInfo[0].groupId})"  placeholder='search members'>
+                                  <div id='showNewUserAppended'></div>
+                                  </div>
+                                  
+                                
+            `
+            existingEmptyElement.append(newMember)
         }
 
+        function searchNewUsertoAddInGroup(groupId) {
+            const searchValue = document.querySelector('.searchAddedMemberForGroup').value
+            const token = localStorage.getItem('token');
+            axios.get(`http://localhost:5000/group/already/${searchValue}/${JSON.stringify(usersInGroups)}`, {
+                    headers: {
+                        "Authorization": token
+                    }
+                })
+                .then(response => {
+                    if (response.status == '201') {
+                        console.log(response.data)
+                        appendingSearchItem(response.data)
+
+                    } else {
+                        showMsg(response.data.message)
+                    }
+
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
 
         function editDetails(groupsInfo) {
             // we can iterate the nodelist by the forEach or simple for loop
+            console.log(data);
             const submitButton = document.querySelector('.editButton-onmoredetails');
             const checkBoxes = document.querySelectorAll('.editable');
+            const deleteUserFromGroup = document.querySelectorAll('.delete-user-from-group');
 
             checkBoxes.forEach(chechk => {
                 chechk.style.display = 'inline-block'
+            })
+
+            deleteUserFromGroup.forEach(deleteUser => {
+                deleteUser.style.display = 'inline-block'
             })
 
             submitButton.classList.add('editButton-onmoredetails')
@@ -632,6 +764,26 @@
             }
         }
 
+        function DeleteFromGroup(usrId, grpId) {
+            const responseofUser = confirm('Are you sure you want to delete the user');
+            const token = localStorage.getItem('token')
+            if (responseofUser) {
+                axios.delete(`http://localhost:5000/group/${grpId}/${usrId}`, {
+                        headers: {
+                            'Authorization': token
+                        }
+                    })
+                    .then(response => {
+                        document.querySelector(`.member-name-isAdmin_${usrId}`).innerHTML = ''
+                        window.location.href = '/chat.html'
+                    })
+                    .catch(err => {
+                        console.log(err)
+                    })
+            }
+
+        }
+
         function SubmitDetailsOfGroup(grpId) {
             const token = localStorage.getItem('token');
             axios.get(`http://localhost:5000/group/edit/${grpId}/${JSON.stringify(userIds)}`, {
@@ -640,14 +792,34 @@
                     }
                 })
                 .then(response => {
-                    console.log('checkbox-respomse', response);
-                    window.location.href = 'chat.html'
+                    if (response.status == 200) {
+                        showMsg(response.data.message)
+                    } else {
+                        window.location.href = 'chat.html'
+                    }
+
                 })
                 .catch(err => {
                     console.log(err)
                 })
         }
 
+        function makeChanges(grpname, grpId) {
+            const token = localStorage.getItem('token')
+            axios.post(`http://localhost:5000/group/added/${grpId}/${grpname}`, {
+                    data
+                }, {
+                    headers: {
+                        'Authorization': token
+                    }
+                })
+                .then(response => {
+                    console.log('Added', response)
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
 
 
         function closemoreDetails(ID) {
