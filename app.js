@@ -97,7 +97,7 @@ group.belongsToMany(user, { through: groupPart })
 
 
 
-// using cron to delete the message which is 1 day message
+// using cron to shift the message which is 1 day message
 const job = new cronJob.CronJob(
     '*/10 * * * * *', // cronTime
     async function() {
