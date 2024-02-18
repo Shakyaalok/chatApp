@@ -1,0 +1,25 @@
+when we get thorugh the database then we can see the tables only when we complete the controllers and routes only 
+
+2.Use Op.ne for simple inequality checks against a single value.
+ex->const { Op } = require('sequelize');
+
+const newMembers = await User.findAll({
+    where: {
+        id: {
+            [Op.ne]: 1
+        }
+    }
+});
+In this case, newMembers will contain all users whose ID is not 1.
+
+
+Use Op.notIn when we want to exclude records based on a list of values.
+const { Op } = require('sequelize');
+const newMembers = await User.findAll({
+    where: {
+        id: {
+            [Op.notIn]: [1, 2, 3]
+        }
+    }
+});
+In this case, newMembers will contain all users whose ID is not 1, 2, or 3.
