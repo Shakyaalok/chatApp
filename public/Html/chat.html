@@ -112,7 +112,7 @@
                     group_id: parseInt(group.value)
                 }
             }
-            axios.post(`http://54.242.191.158:3000/chat`, msgObj, {
+            axios.post(`http://localhost:5000/chat`, msgObj, {
                     headers: {
                         'Authorization': token
                     }
@@ -142,7 +142,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
             console.log(token)
-            axios.get(`http://54.242.191.158:3000/chat/allusers`, {
+            axios.get(`http://localhost:5000/chat/allusers`, {
                     headers: {
                         'Authorization': token
                     }
@@ -229,7 +229,7 @@
         function Searching() {
             const groupMember = document.getElementById('group-member').value;
             const token = localStorage.getItem('token');
-            axios.get(`http://54.242.191.158:3000/chat/search/${groupMember}`, {
+            axios.get(`http://localhost:5000/chat/search/${groupMember}`, {
                     headers: {
                         'Authorization': token
                     }
@@ -416,7 +416,7 @@
         function showAllMessageOnUserClick(reciever_id) {
             const token = localStorage.getItem('token');
             // console.log(token)
-            axios.get(`http://54.242.191.158:3000/chat/usermsg/${reciever_id}`, {
+            axios.get(`http://localhost:5000/chat/usermsg/${reciever_id}`, {
                 headers: {
                     'Authorization': token
                 }
@@ -440,7 +440,7 @@
         function showGroupMessagesOnUserClick(group_Id) {
             const token = localStorage.getItem('token');
             // console.log(token)
-            axios.get(`http://54.242.191.158:3000/group/${group_Id}`, {
+            axios.get(`http://localhost:5000/group/${group_Id}`, {
                 headers: {
                     'Authorization': token
                 }
@@ -525,7 +525,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
-            axios.get(`http://54.242.191.158:3000/group`, {
+            axios.get(`http://localhost:5000/group`, {
                     headers: {
                         'Authorization': token
                     }
@@ -559,7 +559,7 @@
 
             }
 
-            axios.post(`http://54.242.191.158:3000/group/create`,
+            axios.post(`http://localhost:5000/group/create`,
                     data, {
                         headers: {
                             'Authorization': token
@@ -626,7 +626,7 @@
         function showMoreDtails(groupId) {
             console.log(groupId)
             const token = localStorage.getItem('token')
-            axios.get(`http://54.242.191.158:3000/group/more/${groupId}`, {
+            axios.get(`http://localhost:5000/group/more/${groupId}`, {
                     headers: {
                         'Authorization': token
                     }
@@ -686,7 +686,7 @@
 
             const groupId = groupsInfo[0].groupId
             const token = localStorage.getItem('token')
-            axios.get(`http://54.242.191.158:3000/group/${groupId}/${userId}`, {
+            axios.get(`http://localhost:5000/group/${groupId}/${userId}`, {
                     headers: {
                         'Authorization': token
                     }
@@ -740,7 +740,7 @@
         function searchNewUsertoAddInGroup(groupId) {
             const searchValue = document.querySelector('.searchAddedMemberForGroup').value
             const token = localStorage.getItem('token');
-            axios.get(`http://54.242.191.158:3000/group/already/${searchValue}/${JSON.stringify(usersInGroups)}`, {
+            axios.get(`http://localhost:5000/group/already/${searchValue}/${JSON.stringify(usersInGroups)}`, {
                     headers: {
                         "Authorization": token
                     }
@@ -792,7 +792,7 @@
             const responseofUser = confirm('Are you sure you want to delete the user');
             const token = localStorage.getItem('token')
             if (responseofUser) {
-                axios.delete(`http://54.242.191.158:3000/group/${grpId}/${usrId}`, {
+                axios.delete(`http://localhost:5000/group/${grpId}/${usrId}`, {
                         headers: {
                             'Authorization': token
                         }
@@ -810,7 +810,7 @@
 
         function SubmitDetailsOfGroup(grpId) {
             const token = localStorage.getItem('token');
-            axios.get(`http://54.242.191.158:3000/group/edit/${grpId}/${JSON.stringify(userIds)}`, {
+            axios.get(`http://localhost:5000/group/edit/${grpId}/${JSON.stringify(userIds)}`, {
                     headers: {
                         'Authorization': token
                     }
@@ -830,7 +830,7 @@
 
         function makeChanges(grpname, grpId) {
             const token = localStorage.getItem('token')
-            axios.post(`http://54.242.191.158:3000/group/added/${grpId}/${grpname}`, {
+            axios.post(`http://localhost:5000/group/added/${grpId}/${grpname}`, {
                     data
                 }, {
                     headers: {
